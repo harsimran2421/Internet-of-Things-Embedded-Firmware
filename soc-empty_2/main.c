@@ -46,6 +46,12 @@
 #include "bspconfig.h"
 #endif
 
+
+#define ECHO_PORT gpioPortD
+#define TRIGGER_PORT gpioPortD
+
+#define ECHO_PIN 10
+#define TRIGGER_PIN 12
 /***********************************************************************************************//**
  * @addtogroup Application
  * @{
@@ -160,7 +166,7 @@ void accelerationMeasure()
 	uint8_t accelerationy;
 	uint8_t accelerationz;
 
-
+	spi_init();
 	accelerationx = 0xAA;
 	accelerationy = 0xAA;
 	accelerationz = 0xAA;
@@ -168,22 +174,24 @@ void accelerationMeasure()
 	accelerationx = BMA280_RegisterRead(USART1, 0x03);
 	gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_X_Axis_Measured_Value, 1, &accelerationx);
 
+	UDELAY_Delay(2);
 	accelerationy = BMA280_RegisterRead(USART1, 0x05);
-	gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_Y_Axis_Measured_Value, 1, &accelerationy);
+	gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_X_Axis_Measured_Value/*gattdb_Y_Axis_Measured_Value*/, 1, &accelerationy);
 
+	UDELAY_Delay(2);
 	accelerationz = BMA280_RegisterRead(USART1, 0x07);
-	gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_Z_Axis_Measured_Value, 1, &accelerationz);
+	gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_X_Axis_Measured_Value/*gattdb_Z_Axis_Measured_Value*/, 1, &accelerationz);
 
-	char *test = (char *)malloc(3*sizeof(char));
-	itoa(accelerationx,test, 10);
-	graphWriteString(test);
+	//char *test = (char *)malloc(3*sizeof(char));
+	//itoa(accelerationx,test, 10);
 //	  GRAPHICS_Init();
 //	 GRAPHICS_Clear();
 //	  GRAPHICS_AppendString(test);
 //	  GRAPHICS_Update();
-	printf("\nACC X%d, Y%d, Z%d", accelerationx,accelerationy,accelerationz);
+	//printf("\nACC X%d, Y%d, Z%d", accelerationx,accelerationy,accelerationz);
 
 }
+
 void main(void)
 {
   // Initialize device
@@ -197,9 +205,10 @@ void main(void)
   gecko_init(&config);
 
   spi_init();
-	 GRAPHICS_Clear();
-	  GRAPHICS_AppendString("Harry");
-	  GRAPHICS_Update();
+//  GRAPHICS_Init();
+//	 GRAPHICS_Clear();
+//	  GRAPHICS_AppendString("Harry");
+//	  GRAPHICS_Update();
 
   //RETARGET_SerialInit();
 
@@ -227,8 +236,15 @@ void main(void)
         gecko_cmd_hardware_set_soft_timer(32768, 0, 0);
         break;
 
+      case gecko_evt_le_connection_opened_id:
+    	  	  GRAPHICS_Init();
+    	  	  GRAPHICS_Clear();
+    	  	  GRAPHICS_AppendString("Harry");
+    	  	  GRAPHICS_Update();
+    	  	  break;
       case gecko_evt_hardware_soft_timer_id:
       	  accelerationMeasure();
+    	  //ultrasonic_read();
           break;
 
       case gecko_evt_le_connection_closed_id:

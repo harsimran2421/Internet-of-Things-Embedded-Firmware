@@ -43,6 +43,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 #else
 #include "bspconfig.h"
@@ -75,10 +76,10 @@ const uint8 serviceUUID[16] = {0x2e, 0x03, 0xb8, 0x7a, 0x2c, 0x3f, 0x00, 0xbc, 0
 const uint8 charUUID1[16] = {0xac, 0x83, 0x50, 0x72, 0x9d, 0x98, 0x24, 0xb0, 0x7a, 0x4f, 0xdb, 0xdf, 0x8e, 0xf4, 0x90, 0x84};
 
 // SPP data UUID: 8490f48edfdb4f7ab024989d725083ac
-const uint8 charUUID2[16] = {0xac, 0x83, 0x50, 0x72, 0x9d, 0x98, 0x24, 0xb0, 0x7a, 0x4f, 0xdb, 0xdf, 0x8e, 0xf4, 0x90, 0x84};
+const uint8 charUUID2[16] = {0x2d, 0xdf, 0xea, 0xa8, 0x97, 0xe4, 0xef, 0xb9, 0x82, 0x4b, 0x55, 0xbf, 0xc9, 0x91, 0x8d, 0x5e};
 
 // SPP data UUID: 8490f48edfdb4f7ab024989d725083ac
-const uint8 charUUID3[16] = {0xac, 0x83, 0x50, 0x72, 0x9d, 0x98, 0x24, 0xb0, 0x7a, 0x4f, 0xdb, 0xdf, 0x8e, 0xf4, 0x90, 0x84};
+const uint8 charUUID3[16] = {0x53, 0x56, 0x66, 0xd0, 0x0c, 0x7a, 0x3b, 0xa6, 0x5c, 0x48, 0x0f, 0xbe, 0x14, 0x7f, 0xe7, 0x70};
 
 // Gecko configuration parameters (see gecko_configuration.h)
 static const gecko_configuration_t config = {
@@ -188,6 +189,12 @@ void main(void)
   char printbuf[128];
   char *test;
   char *test1;
+//  char *test2;
+//  char *test3;
+  int count = 0;
+  uint8_t x_axis = 0;
+  uint8_t y_axis = 0;
+  uint8_t z_axis = 0;
   // Initialize device
   initMcu();
   // Initialize board
@@ -317,41 +324,49 @@ void main(void)
            	break;
 
        case gecko_evt_gatt_characteristic_id:
-    	  test = (char *)malloc(sizeof(char)*16);
-    	  itoa(evt->data.evt_gatt_characteristic.uuid.len,test,10);
-    	  GRAPHICS_AppendString(test);
-    	  GRAPHICS_Update();
           		if(evt->data.evt_gatt_characteristic.uuid.len == 16)
           		{
-          			//GRAPHICS_Clear();
 //          			GRAPHICS_AppendString("Naruto\n");
 //          			GRAPHICS_Update();
+
           			if(memcmp(charUUID1, evt->data.evt_gatt_characteristic.uuid.data,16) == 0)
           			{
-          				GRAPHICS_AppendString("Characteristic 1\n");
-          				GRAPHICS_Update();
+          				test1 = (char *)malloc(sizeof(char)*16);
+//          	    	  	itoa(evt->data.evt_gatt_characteristic.characteristic,test1,10);
+//          	    	  	GRAPHICS_Clear();
+//          	    	  	GRAPHICS_AppendString(test1);
+//          				GRAPHICS_AppendString("one\n");
+//          				GRAPHICS_Update();
           				_char_handle1 = evt->data.evt_gatt_characteristic.characteristic;
           			}
-          			if(memcmp(charUUID2, evt->data.evt_gatt_characteristic.uuid.data,16) == 0)
+          			else if(memcmp(charUUID2, evt->data.evt_gatt_characteristic.uuid.data,16) == 0)
           			{
-          				GRAPHICS_AppendString("Characteristic 2\n");
-          				GRAPHICS_Update();
+//          				test2 = (char *)malloc(sizeof(char)*16);
+//          	    	  	itoa(evt->data.evt_gatt_characteristic.characteristic,test2,10);
+//          	    	  	GRAPHICS_AppendString(test2);
+//          				GRAPHICS_AppendString("one\n");
+//          				GRAPHICS_Update();
+//          				GRAPHICS_AppendString("two\n");
+//          				GRAPHICS_Update();
           			    _char_handle2 = evt->data.evt_gatt_characteristic.characteristic;
-          			          			}
-          			if(memcmp(charUUID3, evt->data.evt_gatt_characteristic.uuid.data,16) == 0)
-          			          			{
-          			   GRAPHICS_AppendString("Characteristic 3\n");
-          			   GRAPHICS_Update();
+          			}
+          			else if(memcmp(charUUID3, evt->data.evt_gatt_characteristic.uuid.data,16) == 0)
+          			{
+ //         				test3 = (char *)malloc(sizeof(char)*16);
+ //         	    	  	itoa(evt->data.evt_gatt_characteristic.characteristic,test3,10);
+//          	    	  	GRAPHICS_AppendString(test3);
+//          				GRAPHICS_Update();
+//          			   GRAPHICS_Update();
           			   _char_handle3 = evt->data.evt_gatt_characteristic.characteristic;
           			}
-
           		}
-
         break;
 
           	case gecko_evt_gatt_characteristic_value_id:
-//          		GRAPHICS_AppendString("Entered characteristic value\n");
-//          		          				GRAPHICS_Update();
+//          		test3 = (char *)malloc(sizeof(char)*16);
+//          		itoa(evt->data.evt_gatt_characteristic_value.characteristic,test3,10);
+//          		GRAPHICS_AppendString(test3);
+//          		GRAPHICS_Update();
           		if(evt->data.evt_gatt_characteristic_value.characteristic == _char_handle1)
           		{
           			// data received from SPP server -> print to UART
@@ -360,31 +375,20 @@ void main(void)
           			printbuf[evt->data.evt_gatt_characteristic_value.value.len] = 0;
           			test1 = (char *)malloc(sizeof(char)*1);
           			itoa(*(evt->data.evt_gatt_characteristic_value.value.data),test1,10);
-          			GRAPHICS_AppendString(test1);
+         			GRAPHICS_AppendString(test1);
           			GRAPHICS_Update();
+          			count++;
+
           		}
-          		if(evt->data.evt_gatt_characteristic_value.characteristic == _char_handle2)
+          		if(count==1)
+          			x_axis = *test1;
+          		if(count==2)
+          			y_axis = *test1;
+          		if(count == 3)
           		{
-          			// data received from SPP server -> print to UART
-          			// NOTE: this works only with text (no binary) because printf() expects null-terminated strings as input
-          			memcpy(printbuf, evt->data.evt_gatt_characteristic_value.value.data, evt->data.evt_gatt_characteristic_value.value.len);
-          			printbuf[evt->data.evt_gatt_characteristic_value.value.len] = 0;
-          			test1 = (char *)malloc(sizeof(char)*1);
-          			itoa(*(evt->data.evt_gatt_characteristic_value.value.data),test1,10);
-          			GRAPHICS_AppendString(test1);
-          			GRAPHICS_Update();
-          		}
-          		if(evt->data.evt_gatt_characteristic_value.characteristic == _char_handle3)
-          		{
-          			// data received from SPP server -> print to UART
-          			// NOTE: this works only with text (no binary) because printf() expects null-terminated strings as input
-          			memcpy(printbuf, evt->data.evt_gatt_characteristic_value.value.data, evt->data.evt_gatt_characteristic_value.value.len);
-          			printbuf[evt->data.evt_gatt_characteristic_value.value.len] = 0;
-          			test1 = (char *)malloc(sizeof(char)*1);
-          			itoa(*(evt->data.evt_gatt_characteristic_value.value.data),test1,10);
+          			z_axis = *test1;
           			GRAPHICS_Clear();
-          			GRAPHICS_AppendString(test1);
-          			GRAPHICS_Update();
+          			count = 0;
           		}
           	break;
 
