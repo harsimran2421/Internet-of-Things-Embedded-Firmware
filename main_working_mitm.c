@@ -25,7 +25,6 @@
 #include "native_gecko.h"
 #include "gatt_db.h"
 
-/* Libraries containing default Gecko configuration values */
 #include "em_emu.h"
 #include "em_cmu.h"
 
@@ -70,7 +69,7 @@ uint8_t bluetooth_stack_heap[DEFAULT_BLUETOOTH_HEAP(MAX_CONNECTIONS)];
 // Gecko configuration parameters (see gecko_configuration.h)
 static const gecko_configuration_t config = {
   .config_flags = 0,
-  .sleep.flags = SLEEP_FLAGS_DEEP_SLEEP_ENABLE,
+  .sleep.flags = 0,//SLEEP_FLAGS_DEEP_SLEEP_ENABLE,
   .bluetooth.max_connections = MAX_CONNECTIONS,
   .bluetooth.heap = bluetooth_stack_heap,
   .bluetooth.heap_size = sizeof(bluetooth_stack_heap),
@@ -139,7 +138,7 @@ void spi_init()
 
 }
 
-uint8_t ACC_Read(USART_TypeDef *usart, uint8_t offset)
+uint8_t BMA280_RegisterRead(USART_TypeDef *usart, uint8_t offset)
 {
 	uint16_t data;
 	uint32_t tmp;
@@ -160,27 +159,35 @@ uint8_t ACC_Read(USART_TypeDef *usart, uint8_t offset)
 
 }
 
-void ACC_readings()
+void accelerationMeasure()
 {
-	uint8_t x_axis;
-	uint8_t y_axis;
-	uint8_t z_axis;
+	uint8_t accelerationx;
+	uint8_t accelerationy;
+	uint8_t accelerationz;
 
 	spi_init();
-	x_axis = 0xAA;
-	y_axis = 0xAA;
-	z_axis = 0xAA;
+	accelerationx = 0xAA;
+	accelerationy = 0xAA;
+	accelerationz = 0xAA;
 
-	x_axis = ACC_Read(USART1, 0x03);
-	gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_X_Axis_Measured_Value, 1, &x_axis);
-
-	UDELAY_Delay(2);
-	y_axis = ACC_Read(USART1, 0x05);
-	gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_X_Axis_Measured_Value, 1, &y_axis);
+	accelerationx = BMA280_RegisterRead(USART1, 0x03);
+	gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_X_Axis_Measured_Value, 1, &accelerationx);
 
 	UDELAY_Delay(2);
-	z_axis = ACC_Read(USART1, 0x07);
-	gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_X_Axis_Measured_Value, 1, &z_axis);
+	accelerationy = BMA280_RegisterRead(USART1, 0x05);
+	gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_X_Axis_Measured_Value/*gattdb_Y_Axis_Measured_Value*/, 1, &accelerationy);
+
+	UDELAY_Delay(2);
+	accelerationz = BMA280_RegisterRead(USART1, 0x07);
+	gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_X_Axis_Measured_Value/*gattdb_Z_Axis_Measured_Value*/, 1, &accelerationz);
+
+	//char *test = (char *)malloc(3*sizeof(char));
+	//itoa(accelerationx,test, 10);
+//	  GRAPHICS_Init();
+//	 GRAPHICS_Clear();
+//	  GRAPHICS_AppendString(test);
+//	  GRAPHICS_Update();
+	//printf("\nACC X%d, Y%d, Z%d", accelerationx,accelerationy,accelerationz);
 
 }
 
@@ -200,7 +207,12 @@ void main(void)
 
   spi_init();
   struct gecko_msg_le_connection_opened_evt_t * activeConnectionId;
+//  GRAPHICS_Init();
+//	 GRAPHICS_Clear();
+//	  GRAPHICS_AppendString("Harry");
+//	  GRAPHICS_Update();
 
+  //RETARGET_SerialInit();
 
   while (1) {
     /* Event pointer for handling events */
@@ -231,33 +243,51 @@ void main(void)
         gecko_cmd_hardware_set_soft_timer(32768, 0, 0);
         break;
       case gecko_evt_le_connection_opened_id:
-    	  	  GRAPHICS_Init();
-    	  	  GRAPHICS_Clear();
-    	  	  GRAPHICS_AppendString("System Booted");
-    	  	  GRAPHICS_Update();
+//    	  	  GRAPHICS_Init();
+//    	  	  GRAPHICS_Clear();
+//    	  	  GRAPHICS_AppendString("Harry");
+//    	  	  GRAPHICS_Update();
     	  	 /* Store the connection ID */
     	  	 activeConnectionId = evt->data.evt_le_connection_opened.connection;
 
     	  	          /* The HTM service typically indicates and indications cannot be given an encrypted property so
     	  	           * force encryption immediately after connecting */
     	  	 gecko_cmd_sm_increase_security(activeConnectionId);
-    	  	gecko_cmd_sm_enter_passkey(evt->data.evt_sm_passkey_request.connection,123456);
     	  	  break;
 
-
+      case gecko_evt_sm_passkey_display_id:
+    	  test = (char *)malloc(5*sizeof(char));
+    	  	itoa(evt->data.evt_sm_passkey_display.passkey,test, 10);
+//    	  	  GRAPHICS_Init();
+//    	  	 GRAPHICS_Clear();
+//    	  	  GRAPHICS_AppendString(test);
+//    	  	  GRAPHICS_Update();
+                break;
 
 //      case gecko_evt_sm_passkey_request_id:
 //	  	  	  	 GRAPHICS_Init();
 //	  	  	  	 GRAPHICS_Clear();
+//
 //                GRAPHICS_AppendString("Requesting KEY");
 //                GRAPHICS_Update();
-////                gecko_cmd_sm_enter_passkey(evt->data.evt_sm_passkey_request.connection,123456);
 //                bool read_pk = true;
+//
 //                break;
 
+      case gecko_evt_sm_confirm_passkey_id:
+    	  test1 = (char *)malloc(5*sizeof(char));
+    	  	itoa(evt->data.evt_sm_confirm_passkey.passkey,test1, 10);
+//    	  	GRAPHICS_AppendString(test1);
+//    	  	GRAPHICS_Update();
+    	  	gecko_cmd_sm_passkey_confirm(evt->data.evt_sm_confirm_passkey.connection,1);
+    	  	GRAPHICS_Clear();
+    	  	GRAPHICS_AppendString("\n confirmed");
+    	  	GRAPHICS_Update();
+                bool read_y_n = true;
+                break;
 
       case gecko_evt_hardware_soft_timer_id:
-      	  ACC_readings();
+      	  accelerationMeasure();
     	  //ultrasonic_read();
           break;
 

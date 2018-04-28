@@ -68,7 +68,10 @@ uint8_t bluetooth_stack_heap[DEFAULT_BLUETOOTH_HEAP(MAX_CONNECTIONS)];
 #define SCANNING		1
 #define FIND_SERVICE	2
 #define FIND_CHAR		3
-
+#define PB0_PORT 		gpioPortF
+#define PB1_PORT		gpioPortF
+#define PB0_PIN			(6)
+#define PB1_PIN			(7)
 // custom service UUID: 8f820745123148cebc003f2c7ab8032e
 const uint8 serviceUUID[16] = {0x2e, 0x03, 0xb8, 0x7a, 0x2c, 0x3f, 0x00, 0xbc, 0xce, 0x48, 0x31, 0x12, 0x45, 0x07, 0x82, 0x8f};
 
@@ -189,6 +192,8 @@ void main(void)
   char printbuf[128];
   char *test;
   char *test1;
+  int accept = 0;
+  int reject = 0;
 //  char *test2;
 //  char *test3;
   int count = 0;
@@ -201,11 +206,12 @@ void main(void)
   initBoard();
   // Initialize application
   initApp();
-
+  GPIO_PinModeSet(PB0_PORT,PB0_PIN, gpioModeInput, 1);
+  GPIO_PinModeSet(PB1_PORT,PB1_PIN, gpioModeInput, 1);
   // Initialize stack
   gecko_init(&config);
   GRAPHICS_Init();
-
+  struct gecko_msg_le_connection_opened_evt_t * activeConnectionId;
   while (1) {
     /* Event pointer for handling events */
     struct gecko_cmd_packet* evt;
@@ -219,6 +225,11 @@ void main(void)
        * Do not call any stack commands before receiving the boot event.
        * Here the system is set to start advertising immediately after boot procedure. */
       case gecko_evt_system_boot_id:
+
+     	 gecko_cmd_sm_delete_bondings();
+     	 gecko_cmd_sm_configure(0x07, sm_io_capability_displayyesno); /* Numeric comparison */
+//
+     	 gecko_cmd_sm_set_bondable_mode(1);
     	  /*begin scanning */
     	  gecko_cmd_le_gap_discover(le_gap_discover_generic);
         break;
@@ -229,7 +240,6 @@ void main(void)
           	if(process_scan_response(&(evt->data.evt_le_gap_scan_response)) > 0)
           	{
           		struct gecko_msg_le_gap_open_rsp_t *pResp;
-
           		// match found -> stop discovery and try to connect
           		gecko_cmd_le_gap_end_procedure();
 
@@ -244,12 +254,54 @@ void main(void)
       case gecko_evt_le_connection_opened_id:
 
       	//	 start service discovery (we are only interested in one UUID)
-      	gecko_cmd_gatt_discover_primary_services_by_uuid(_conn_handle, 16, serviceUUID);
+      	//gecko_cmd_gatt_discover_primary_services_by_uuid(_conn_handle, 16, serviceUUID);
       	_main_state = FIND_SERVICE;
-			GRAPHICS_Clear();
-			GRAPHICS_AppendString("Hello World!\n");
-			GRAPHICS_Update();
+	  	 activeConnectionId = evt->data.evt_le_connection_opened.connection;
+
+	  	          /* The HTM service typically indicates and indications cannot be given an encrypted property so
+	  	           * force encryption immediately after connecting */
+//	  	 gecko_cmd_sm_increase_security(activeConnectionId);
       	break;
+
+      case gecko_evt_sm_passkey_display_id:
+    	  test = (char *)malloc(5*sizeof(char));
+    	  	itoa(evt->data.evt_sm_passkey_display.passkey,test, 10);
+//    	  	  GRAPHICS_Init();
+    	  	 GRAPHICS_Clear();
+    	  	  GRAPHICS_AppendString(test);
+    	  	  GRAPHICS_Update();
+          break;
+
+      case gecko_evt_sm_bonded_id:
+    	  gecko_cmd_gatt_discover_primary_services_by_uuid(_conn_handle, 16, serviceUUID);
+ 	  	 GRAPHICS_Clear();
+ 	  	  GRAPHICS_AppendString("\n bonded");
+ 	  	  GRAPHICS_Update();
+    	  break;
+
+      case gecko_evt_sm_bonding_failed_id:
+  	  	  GRAPHICS_Clear();
+  	  	  GRAPHICS_AppendString("\n FAILED");
+  	  	  GRAPHICS_Update();
+  	  	  gecko_cmd_sm_delete_bondings();
+  	  	  gecko_cmd_le_gap_discover(le_gap_discover_generic);
+  	  	  break;
+
+      case gecko_evt_sm_confirm_passkey_id:
+    	  test1 = (char *)malloc(5*sizeof(char));
+    	  	itoa(evt->data.evt_sm_confirm_passkey.passkey,test1, 10);
+    	  	GRAPHICS_Clear();
+    	  	GRAPHICS_AppendString(test1);
+    	  	GRAPHICS_Update();
+    	  	while((accept = (GPIO_PinInGet(PB0_PORT, PB0_PIN)) == 1) && (reject = (GPIO_PinInGet(PB1_PORT, PB1_PIN)) == 1));
+    	  	if(accept == 0)
+    	  	{
+    	  		gecko_cmd_sm_passkey_confirm(evt->data.evt_sm_confirm_passkey.connection,1);
+    	  		GRAPHICS_Clear();
+    	  		GRAPHICS_AppendString("\n confirmed");
+    	  		GRAPHICS_Update();
+    	  	}
+                break;
 
       case gecko_evt_le_connection_closed_id:
 
@@ -378,7 +430,6 @@ void main(void)
          			GRAPHICS_AppendString(test1);
           			GRAPHICS_Update();
           			count++;
-
           		}
           		if(count==1)
           			x_axis = *test1;

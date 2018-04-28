@@ -52,6 +52,10 @@
 
 #define ECHO_PIN 10
 #define TRIGGER_PIN 12
+#define PB0_PORT 		gpioPortF
+#define PB1_PORT		gpioPortF
+#define PB0_PIN			(6)
+#define PB1_PIN			(7)
 /***********************************************************************************************//**
  * @addtogroup Application
  * @{
@@ -125,7 +129,6 @@ void spi_init()
 
   USART_InitSync(USART1, &config);
 
-
   // USART1 signal routing: (see EFR32BG datas sheet)
   // US0_CLK: location 11 -> PC8
   // US0_CS: location 11 -> PC9
@@ -182,12 +185,15 @@ void ACC_readings()
 	z_axis = ACC_Read(USART1, 0x07);
 	gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_X_Axis_Measured_Value, 1, &z_axis);
 
+
 }
 
 void main(void)
 {
 	char *test;
 	char *test1;
+	int accept = 1;
+	int reject = 1;
   // Initialize device
   initMcu();
   // Initialize board
@@ -199,8 +205,9 @@ void main(void)
   gecko_init(&config);
 
   spi_init();
+  GPIO_PinModeSet(PB0_PORT,PB0_PIN, gpioModeInput, 1);
+  GPIO_PinModeSet(PB1_PORT,PB1_PIN, gpioModeInput, 1);
   struct gecko_msg_le_connection_opened_evt_t * activeConnectionId;
-
 
   while (1) {
     /* Event pointer for handling events */
@@ -216,8 +223,10 @@ void main(void)
        * Here the system is set to start advertising immediately after boot procedure. */
       case gecko_evt_system_boot_id:
 
-
+    	  /*delete all the bonding information on Booting up*/
     	 gecko_cmd_sm_delete_bondings();
+
+    	 /*to configure the bonding details required*/
     	 gecko_cmd_sm_configure(0x07, sm_io_capability_displayyesno); /* Numeric comparison */
 
     	 gecko_cmd_sm_set_bondable_mode(1);
@@ -231,38 +240,60 @@ void main(void)
         gecko_cmd_hardware_set_soft_timer(32768, 0, 0);
         break;
       case gecko_evt_le_connection_opened_id:
-    	  	  GRAPHICS_Init();
-    	  	  GRAPHICS_Clear();
-    	  	  GRAPHICS_AppendString("System Booted");
-    	  	  GRAPHICS_Update();
+
     	  	 /* Store the connection ID */
     	  	 activeConnectionId = evt->data.evt_le_connection_opened.connection;
 
-    	  	          /* The HTM service typically indicates and indications cannot be given an encrypted property so
-    	  	           * force encryption immediately after connecting */
+    	  	 /* force encryption immediately after connecting */
     	  	 gecko_cmd_sm_increase_security(activeConnectionId);
-    	  	gecko_cmd_sm_enter_passkey(evt->data.evt_sm_passkey_request.connection,123456);
     	  	  break;
 
+      case gecko_evt_sm_confirm_passkey_id:
+    	  	test1 = (char *)malloc(5*sizeof(char));
+    	  	itoa(evt->data.evt_sm_confirm_passkey.passkey,test1, 10);
+    	  	GRAPHICS_Init();
+    	  	GRAPHICS_Clear();
+    	  	GRAPHICS_AppendString(test1);
+    	  	GRAPHICS_Update();
+    	  	/*command to confirm the Recieved passkey*/
+    	  	while((accept = (GPIO_PinInGet(PB0_PORT, PB0_PIN)) == 1) && (reject = (GPIO_PinInGet(PB1_PORT, PB1_PIN)) == 1));
+    	  	if(accept == 0)
+    	  	{
+    	  		gecko_cmd_sm_passkey_confirm(evt->data.evt_sm_confirm_passkey.connection,1);
+        	  	GRAPHICS_AppendString("\n confirmed");
+        	  	GRAPHICS_Update();
+    	  	}
+    	  	/*To Print that the passkey is conform*/
+                break;
 
-
-//      case gecko_evt_sm_passkey_request_id:
-//	  	  	  	 GRAPHICS_Init();
-//	  	  	  	 GRAPHICS_Clear();
-//                GRAPHICS_AppendString("Requesting KEY");
-//                GRAPHICS_Update();
-////                gecko_cmd_sm_enter_passkey(evt->data.evt_sm_passkey_request.connection,123456);
-//                bool read_pk = true;
-//                break;
-
-
+   /*Timer case to trigger the Accelerometer read function after every 1 second*/
       case gecko_evt_hardware_soft_timer_id:
-      	  ACC_readings();
-    	  //ultrasonic_read();
+    	  if(accept == 10)
+    	  {
+    		  ACC_readings();
+    	  }
           break;
+      case gecko_evt_sm_bonded_id:
+    	  GRAPHICS_Init();
+    	  GRAPHICS_Clear();
+    	  GRAPHICS_AppendString("\n confirmed");
+    	  GRAPHICS_Update();
+    	  accept = 10;
+    	  break;
 
+      case gecko_evt_sm_bonding_failed_id:
+    	  GRAPHICS_Init();
+    	  GRAPHICS_Clear();
+    	  GRAPHICS_AppendString("\n FAILED");
+    	  GRAPHICS_Update();
+    	  accept = 0;
+    	  gecko_cmd_sm_delete_bondings();
+    	   gecko_cmd_le_gap_set_mode(le_gap_general_discoverable, le_gap_undirected_connectable);
+    	  break;
+  /*Case when the bluetooth connection is terminated*/
       case gecko_evt_le_connection_closed_id:
-
+    	GRAPHICS_Init();
+    	GRAPHICS_Clear();
         /* Check if need to boot to dfu mode */
         if (boot_to_dfu) {
           /* Enter to DFU OTA mode */

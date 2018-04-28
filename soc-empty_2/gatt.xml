@@ -66,7 +66,7 @@
     <characteristic id="X_Axis_Measured_Value" name="X-Axis" sourceId="custom.type" uuid="8490f48e-dfdb-4f7a-b024-989d725083ac">
       <informativeText>Custom characteristic</informativeText>
       <value length="1" type="hex" variable_length="false">0x00</value>
-      <properties notify="true" notify_requirement="optional"/>
+      <properties authenticated_read="true" authenticated_read_requirement="optional" notify="true" notify_requirement="optional"/>
     </characteristic>
     
     <!--Y-Axis-->
