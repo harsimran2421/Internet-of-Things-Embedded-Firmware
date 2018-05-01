@@ -25,6 +25,7 @@
 #include "native_gecko.h"
 #include "gatt_db.h"
 
+/* Libraries containing default Gecko configuration values */
 #include "em_emu.h"
 #include "em_cmu.h"
 

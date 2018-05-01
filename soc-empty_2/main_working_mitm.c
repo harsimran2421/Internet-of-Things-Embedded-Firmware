@@ -168,7 +168,7 @@ void ACC_readings()
 	uint8_t x_axis;
 	uint8_t y_axis;
 	uint8_t z_axis;
-
+	uint8_t battery;
 	spi_init();
 	x_axis = 0xAA;
 	y_axis = 0xAA;
@@ -185,7 +185,10 @@ void ACC_readings()
 	z_axis = ACC_Read(USART1, 0x07);
 	gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_X_Axis_Measured_Value, 1, &z_axis);
 
+	UDELAY_Delay(20);
+	battery = 5;
 
+	gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_battery_level, 1, &battery);
 }
 
 void main(void)
