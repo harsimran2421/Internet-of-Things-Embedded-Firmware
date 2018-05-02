@@ -44,6 +44,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include "ultrasonic.h"
 
 #else
 #include "bspconfig.h"
@@ -89,6 +90,11 @@ const uint8 charUUID2[16] = {0x2d, 0xdf, 0xea, 0xa8, 0x97, 0xe4, 0xef, 0xb9, 0x8
 
 // SPP data UUID: 8490f48edfdb4f7ab024989d725083ac
 const uint8 charUUID3[16] = {0x53, 0x56, 0x66, 0xd0, 0x0c, 0x7a, 0x3b, 0xa6, 0x5c, 0x48, 0x0f, 0xbe, 0x14, 0x7f, 0xe7, 0x70};
+
+/*navigational readings*/
+uint8_t x_axis = 0;
+uint8_t y_axis = 0;
+uint8_t z_axis = 0;
 
 // Gecko configuration parameters (see gecko_configuration.h)
 static const gecko_configuration_t config = {
@@ -199,6 +205,11 @@ static int process_scan_response(struct gecko_msg_le_gap_scan_response_evt_t *pR
     return(ad_match_found);
 }
 
+void schedule_event(x_axis, y_axis, z_axis)
+{
+	motor_drive(x_axis, y_axis, z_axis);
+}
+
 void main(void)
 {
   char printbuf[128];
@@ -208,14 +219,10 @@ void main(void)
   char *btest;
   int accept = 0;
   int reject = 0;
-//  char *test2;
-//  char *test3;
+  char *test3;
   int service_count = 0;
   int count = 0;
   int ser_count = 0;
-  uint8_t x_axis = 0;
-  uint8_t y_axis = 0;
-  uint8_t z_axis = 0;
   // Initialize device
   initMcu();
   // Initialize board
@@ -227,6 +234,7 @@ void main(void)
   // Initialize stack
   gecko_init(&config);
   GRAPHICS_Init();
+  gpio_init();
   struct gecko_msg_le_connection_opened_evt_t * activeConnectionId;
   while (1) {
     /* Event pointer for handling events */
@@ -243,6 +251,7 @@ void main(void)
       case gecko_evt_system_boot_id:
 
      	 gecko_cmd_sm_delete_bondings();
+
      	 gecko_cmd_sm_configure(0x07, sm_io_capability_displayyesno); /* Numeric comparison */
 //
      	 gecko_cmd_sm_set_bondable_mode(1);
@@ -269,14 +278,14 @@ void main(void)
 
       case gecko_evt_le_connection_opened_id:
     	  //GRAPHICS_Clear();
-    	  GRAPHICS_AppendString("entering_openedid");
-    	  GRAPHICS_Update();
+    	  //GRAPHICS_AppendString("entering_openedid");
+    	  //GRAPHICS_Update();
     	  //gecko_cmd_gatt_discover_primary_services_by_uuid(_conn_handle, 2, bserviceUUID);
     	  _main_state = FIND_SERVICE;
       	//	 start service discovery (we are only interested in one UUID)
   		//GRAPHICS_Clear();
-  		GRAPHICS_AppendString("SER=0");
-  		GRAPHICS_Update();
+  		//GRAPHICS_AppendString("SER=0");
+  		//GRAPHICS_Update();
 
       	break;
 
@@ -306,8 +315,8 @@ void main(void)
     	  	{
     	  		gecko_cmd_sm_passkey_confirm(evt->data.evt_sm_confirm_passkey.connection,1);
     	  		//GRAPHICS_Clear();
-    	  		GRAPHICS_AppendString("\n Bonding confirmed");
-    	  		GRAPHICS_Update();
+    	  		//GRAPHICS_AppendString("\n Bonding confirmed");
+    	  		//GRAPHICS_Update();
     	  	}
                 break;
 
@@ -324,11 +333,11 @@ void main(void)
          break;
 
        case gecko_evt_gatt_service_id:
-    	   	test2 = (char *)malloc(sizeof(char)*16);
-    	    itoa(evt->data.evt_gatt_service.uuid.data,test2,10);
-    	    GRAPHICS_Clear();
-    	    GRAPHICS_AppendString(test2);
-    	    GRAPHICS_Update();
+//    	   	test2 = (char *)malloc(sizeof(char)*16);
+//    	    itoa(evt->data.evt_gatt_service.uuid.data,test2,10);
+//    	    GRAPHICS_Clear();
+//    	    GRAPHICS_AppendString(test2);
+//    	    GRAPHICS_Update();
           	if(evt->data.evt_gatt_service.uuid.len == 16)
           	{
           		if(memcmp(serviceUUID, evt->data.evt_gatt_service.uuid.data,16) == 0)
@@ -340,8 +349,8 @@ void main(void)
           	          	{
           	          		if(memcmp(bserviceUUID, evt->data.evt_gatt_service.uuid.data,2) == 0)
           	          		{
-          	          			GRAPHICS_AppendString("B_service\n");
-          	          			GRAPHICS_Update();
+          	          			//GRAPHICS_AppendString("B_service\n");
+          	          			//GRAPHICS_Update();
           	          			_bservice_handle = evt->data.evt_gatt_service.service;
           	          		}
           	          	}
@@ -355,9 +364,6 @@ void main(void)
 
            		if (_service_handle > 0)
            		{
-//           			GRAPHICS_AppendString("ACC_comp \n");
-//           			GRAPHICS_Update();
-
            			gecko_cmd_gatt_discover_characteristics(_conn_handle, _service_handle);
            			_main_state = FIND_CHAR;
            		}
@@ -373,9 +379,6 @@ void main(void)
 			if(1)
            		{
 				gecko_cmd_gatt_discover_characteristics(_conn_handle, _bservice_handle);
-           			GRAPHICS_Clear();
-           			GRAPHICS_AppendString("B_comp \n");
-           			GRAPHICS_Update();
            			_main_state = BFIND_CHAR;
            		}
            		else
@@ -391,8 +394,6 @@ void main(void)
            		{
            			// Char found, turn on indications
            			gecko_cmd_gatt_set_characteristic_notification(_conn_handle, _char_handle1, gatt_notification);
-           			GRAPHICS_AppendString("char 1 \n");
-           			 GRAPHICS_Update();
            			 if(ser_count <3)
            			 {
            				_main_state = FIND_SERVICE;
@@ -400,23 +401,10 @@ void main(void)
            			 }
            			 else
            			 {
-           				 GRAPHICS_Clear();
-                			GRAPHICS_AppendString("service 2 discover\n");
-                			 GRAPHICS_Update();
            				 ser_count = 0;
            				_main_state = FIND_SERVICE2;
            			 }
            	    }
-//           		if (_char_handle2 > 0)
-//           		{
-//           			// Char found, turn on indications
-//           			gecko_cmd_gatt_set_characteristic_notification(_conn_handle, _char_handle2, gatt_notification);
-//           		}
-//           		if (_char_handle3 > 0)
-//           		{
-//           			// Char found, turn on indications
-//           			gecko_cmd_gatt_set_characteristic_notification(_conn_handle, _char_handle3, gatt_notification);
-//           		}
            		else
            		{
            			// no characteristic found? -> disconnect
@@ -429,16 +417,11 @@ void main(void)
            		{
            			// Char found, turn on indications
          			gecko_cmd_gatt_set_characteristic_notification(_conn_handle, _bchar_handle, gatt_notification);
-         			//GRAPHICS_Clear();
-         			//GRAPHICS_AppendString("batt_send \n");
-         			//GRAPHICS_Update();
 //         			_main_state = BCHAR_VALUE;
          			_main_state = FIND_SERVICE;
            		}
            		else
            		{
-//           			         			GRAPHICS_AppendString("bfind_else\n");
-//           			         			GRAPHICS_Update();
            			gecko_cmd_endpoint_close(_conn_handle);
            		}
         		break;
@@ -450,31 +433,19 @@ void main(void)
        case gecko_evt_gatt_characteristic_id:
 				//test1 = (char *)malloc(sizeof(char)*16);
           	    //itoa(evt->data.evt_gatt_characteristic.characteristic,test1,10);
-          	    //GRAPHICS_Clear();
-          	    //GRAPHICS_AppendString(test1);
-          				//GRAPHICS_AppendString("one\n");
-          				//GRAPHICS_Update();
     	   if(evt->data.evt_gatt_characteristic.uuid.len == 16)
           		{
           			if(memcmp(charUUID1, evt->data.evt_gatt_characteristic.uuid.data,16) == 0)
           			{
           				_char_handle1 = evt->data.evt_gatt_characteristic.characteristic;
           			}
-//          			else if(memcmp(charUUID2, evt->data.evt_gatt_characteristic.uuid.data,16) == 0)
-//          			{
-//          			    _char_handle2 = evt->data.evt_gatt_characteristic.characteristic;
-//          			}
-//          			else if(memcmp(charUUID3, evt->data.evt_gatt_characteristic.uuid.data,16) == 0)
-//          			{
-//          			   _char_handle3 = evt->data.evt_gatt_characteristic.characteristic;
-//          			}
           		}
-          		else if(evt->data.evt_gatt_characteristic.uuid.len == 2)
+          else if(evt->data.evt_gatt_characteristic.uuid.len == 2)
           				{
           					if(memcmp(bcharUUID, evt->data.evt_gatt_characteristic.uuid.data,2) == 0)
           			        {	//GRAPHICS_Clear();
-          			        	GRAPHICS_AppendString("recog_char");
-          			        	GRAPHICS_Update();
+          			        	//GRAPHICS_AppendString("recog_char");
+          			        	//GRAPHICS_Update();
           						_bchar_handle = evt->data.evt_gatt_characteristic.characteristic;
           			        }
           				}
@@ -486,18 +457,34 @@ void main(void)
           			memcpy(printbuf, evt->data.evt_gatt_characteristic_value.value.data, evt->data.evt_gatt_characteristic_value.value.len);
           			printbuf[evt->data.evt_gatt_characteristic_value.value.len] = 0;
           			test1 = (char *)malloc(sizeof(char)*1);
-          			itoa(*(evt->data.evt_gatt_characteristic_value.value.data),test1,10);
-         			GRAPHICS_AppendString(test1);
-          			GRAPHICS_Update();
+          			test2 = (char *)malloc(sizeof(char)*1);
+          			test3 = (char *)malloc(sizeof(char)*1);
+          			//itoa(*(evt->data.evt_gatt_characteristic_value.value.data),test1,10);
+         			//GRAPHICS_AppendString(test1);
+          			//GRAPHICS_Update();
           			count++;
           		if(count==1)
-          			x_axis = *test1;
-          		if(count==2)
-          			y_axis = *test1;
-          		if(count == 3)
           		{
-          			z_axis = *test1;
-          			GRAPHICS_Clear();
+          			x_axis = *(evt->data.evt_gatt_characteristic_value.value.data);
+      				itoa(x_axis,test1,10);
+      				GRAPHICS_Clear();
+      				GRAPHICS_AppendString(test1);
+      				GRAPHICS_Update();
+          		}
+          		else if(count==2)
+          		{
+          			y_axis = *(evt->data.evt_gatt_characteristic_value.value.data);
+      				itoa(y_axis,test2,10);
+      				GRAPHICS_AppendString(test2);
+      				GRAPHICS_Update();
+          		}
+          		else if(count == 3)
+          		{
+          			z_axis = *(evt->data.evt_gatt_characteristic_value.value.data);
+      				itoa(z_axis,test3,10);
+      				GRAPHICS_AppendString(test3);
+      				GRAPHICS_Update();
+          			schedule_event(x_axis, y_axis, z_axis);
           			count = 0;
           		}
           		}
@@ -506,9 +493,6 @@ void main(void)
           			memcpy(printbuf, evt->data.evt_gatt_characteristic_value.value.data, evt->data.evt_gatt_characteristic_value.value.len);
           			btest = (char *)malloc(sizeof(char)*1);
           			itoa(*(evt->data.evt_gatt_characteristic_value.value.data),btest,10);
-          			GRAPHICS_Clear();
-          			GRAPHICS_AppendString(btest);
-          			GRAPHICS_Update();
           		}
           	break;
 

@@ -71,7 +71,9 @@ main.o: ../main.c ../init_mcu.h ../init_board.h ../init_app.h \
  C:\Users\harsi\Desktop\project\soc-empty_4\platform\emlib\inc/em_usart.h \
  C:\Users\harsi\Desktop\project\soc-empty_4\platform\emdrv\sleep\inc/sleep.h \
  C:\Users\harsi\Desktop\project\soc-empty_4\hardware\kit\common\halconfig/bsphalconfig.h \
- C:\Users\harsi\Desktop\project\soc-empty_4\hardware\kit\common\bsp/bsp_bcp.h
+ C:\Users\harsi\Desktop\project\soc-empty_4\hardware\kit\common\bsp/bsp_bcp.h \
+ ../ultrasonic.h \
+ c:\siliconlabs\simplicitystudio\v4_2\developer\sdks\gecko_sdk_suite\v2.1\hardware\kit\common\drivers\udelay.h
 
 ../init_mcu.h:
 
@@ -226,3 +228,7 @@ C:\Users\harsi\Desktop\project\soc-empty_4\platform\emdrv\sleep\inc/sleep.h:
 C:\Users\harsi\Desktop\project\soc-empty_4\hardware\kit\common\halconfig/bsphalconfig.h:
 
 C:\Users\harsi\Desktop\project\soc-empty_4\hardware\kit\common\bsp/bsp_bcp.h:
+
+../ultrasonic.h:
+
+c:\siliconlabs\simplicitystudio\v4_2\developer\sdks\gecko_sdk_suite\v2.1\hardware\kit\common\drivers\udelay.h:
