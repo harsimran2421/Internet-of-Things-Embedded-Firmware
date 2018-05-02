@@ -240,13 +240,13 @@ void main(void)
 
         /* Start general advertising and enable connections. */
         gecko_cmd_le_gap_set_mode(le_gap_general_discoverable, le_gap_undirected_connectable);
-        gecko_cmd_hardware_set_soft_timer(32768, 0, 0);
+        gecko_cmd_hardware_set_soft_timer(16384/*32768*/, 0, 0);
         break;
       case gecko_evt_le_connection_opened_id:
 
     	  	 /* Store the connection ID */
     	  	 activeConnectionId = evt->data.evt_le_connection_opened.connection;
-
+    	  	gecko_cmd_le_connection_set_parameters(evt->data.evt_le_connection_opened.connection, 0X3C,0X3C,0X5,0X6E);
     	  	 /* force encryption immediately after connecting */
     	  	 gecko_cmd_sm_increase_security(activeConnectionId);
     	  	  break;

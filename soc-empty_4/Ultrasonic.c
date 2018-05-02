@@ -63,7 +63,7 @@ void motor_drive(uint8_t x, uint8_t y, uint8_t z)
 		  GPIO_PinOutSet(PIN2_PORT,PIN2_PIN);
 		  GPIO_PinOutSet(PIN3_PORT,PIN3_PIN);
 			//GRAPHICS_Clear();
-			GRAPHICS_AppendString("Running\n");
+			GRAPHICS_AppendString("Forward\n");
 			GRAPHICS_Update();
 		  }
 		  else if((y > 180 && y<235) && (x <15 || x>245))
@@ -72,9 +72,27 @@ void motor_drive(uint8_t x, uint8_t y, uint8_t z)
 		 		  GPIO_PinOutClear(PIN2_PORT,PIN2_PIN);
 		 		  GPIO_PinOutClear(PIN3_PORT,PIN3_PIN);
 		 			//GRAPHICS_Clear();
-		 			GRAPHICS_AppendString("Running\n");
+		 			GRAPHICS_AppendString("Reverse\n");
 		 			GRAPHICS_Update();
 		 		  }
+		  else if((x > 180 && x <235) && (y <15 || y > 245))         ///LEFT
+		 		  {
+		 		  GPIO_PinOutSet(PIN1_PORT,PIN1_PIN);
+		 		  GPIO_PinOutSet(PIN2_PORT,PIN2_PIN);
+		 		  GPIO_PinOutClear(PIN3_PORT,PIN3_PIN);
+		 			//GRAPHICS_Clear();
+		 			GRAPHICS_AppendString("Left\n");
+		 			GRAPHICS_Update();
+		 		  }
+		  else if((x > 20 && x < 100) && (y < 15 || y > 245))        //RIGHT
+		  {
+		  GPIO_PinOutSet(PIN1_PORT,PIN1_PIN);
+		  GPIO_PinOutClear(PIN2_PORT,PIN2_PIN);
+		  GPIO_PinOutSet(PIN3_PORT,PIN3_PIN);
+			//GRAPHICS_Clear();
+			GRAPHICS_AppendString("Right\n");
+			GRAPHICS_Update();
+		  }
 		  else
 		  {
 			  GPIO_PinOutClear(PIN1_PORT,PIN1_PIN);

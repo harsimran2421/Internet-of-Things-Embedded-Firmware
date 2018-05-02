@@ -277,15 +277,8 @@ void main(void)
           break;
 
       case gecko_evt_le_connection_opened_id:
-    	  //GRAPHICS_Clear();
-    	  //GRAPHICS_AppendString("entering_openedid");
-    	  //GRAPHICS_Update();
-    	  //gecko_cmd_gatt_discover_primary_services_by_uuid(_conn_handle, 2, bserviceUUID);
+
     	  _main_state = FIND_SERVICE;
-      	//	 start service discovery (we are only interested in one UUID)
-  		//GRAPHICS_Clear();
-  		//GRAPHICS_AppendString("SER=0");
-  		//GRAPHICS_Update();
 
       	break;
 
@@ -293,7 +286,7 @@ void main(void)
     	  //GRAPHICS_Clear();
     	  GRAPHICS_AppendString("\n bonded_id");
       	  GRAPHICS_Update();
-      	gecko_cmd_gatt_discover_primary_services_by_uuid(_conn_handle, 16, serviceUUID);
+     	gecko_cmd_gatt_discover_primary_services_by_uuid(_conn_handle, 16, serviceUUID);
     	  break;
 
       case gecko_evt_sm_bonding_failed_id:
@@ -324,20 +317,20 @@ void main(void)
 
           	reset_variables();
 
+          	GRAPHICS_Clear();
+          	GRAPHICS_AppendString("Closed\n");
+          	GRAPHICS_Update();
           	SLEEP_SleepBlockEnd(sleepEM2); // enable sleeping after disconnect
-
+        	 gecko_cmd_sm_set_bondable_mode(1);
           	gecko_cmd_le_gap_discover(le_gap_discover_generic);
+          	gecko_cmd_gatt_discover_primary_services_by_uuid(_conn_handle, 16, serviceUUID);
+          	_main_state = FIND_SERVICE;
          break;
 
        case gecko_evt_le_connection_parameters_id:
          break;
 
        case gecko_evt_gatt_service_id:
-//    	   	test2 = (char *)malloc(sizeof(char)*16);
-//    	    itoa(evt->data.evt_gatt_service.uuid.data,test2,10);
-//    	    GRAPHICS_Clear();
-//    	    GRAPHICS_AppendString(test2);
-//    	    GRAPHICS_Update();
           	if(evt->data.evt_gatt_service.uuid.len == 16)
           	{
           		if(memcmp(serviceUUID, evt->data.evt_gatt_service.uuid.data,16) == 0)
@@ -349,8 +342,6 @@ void main(void)
           	          	{
           	          		if(memcmp(bserviceUUID, evt->data.evt_gatt_service.uuid.data,2) == 0)
           	          		{
-          	          			//GRAPHICS_AppendString("B_service\n");
-          	          			//GRAPHICS_Update();
           	          			_bservice_handle = evt->data.evt_gatt_service.service;
           	          		}
           	          	}
@@ -368,7 +359,12 @@ void main(void)
            			_main_state = FIND_CHAR;
            		}
            		else
+           		{
+           			GRAPHICS_Clear();
+           			GRAPHICS_AppendString("STOPPED\n");
+           			GRAPHICS_Update();
            			gecko_cmd_endpoint_close(_conn_handle);
+           		}
            		break;
 
            	case FIND_SERVICE2:
