@@ -28,6 +28,10 @@
 /* Libraries containing default Gecko configuration values */
 #include "em_emu.h"
 #include "em_cmu.h"
+//#include "em_gpio.h"
+#include "gpio.h"
+//#include "gpiointerrupt.h"
+//#include "em_adc.h"
 
 /* Device initialization header */
 #include "hal-config.h"
@@ -186,28 +190,56 @@ void ACC_readings()
 	gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_X_Axis_Measured_Value, 1, &z_axis);
 
 	UDELAY_Delay(20);
-	battery = 5;
 
-	gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_battery_level, 1, &battery);
+	gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_battery_level, 1, &running);
 }
+
+void gpio_init()
+{
+	CMU_ClockEnable(cmuClock_GPIO, true);
+	GPIO_PinModeSet(PB0_PORT, PB0_PIN, gpioModeInput, 0);
+	GPIO_PinModeSet(PB1_PORT, PB1_PIN, gpioModeInput, 0);
+	GPIO_IntConfig(PB0_PORT, PB0_PIN , TRUE, true, true);
+	GPIO_IntConfig(PB1_PORT, PB1_PIN , TRUE, true, true);
+	NVIC_ClearPendingIRQ(GPIO_EVEN_IRQn);
+	NVIC_EnableIRQ(GPIO_EVEN_IRQn);
+	NVIC_ClearPendingIRQ(GPIO_ODD_IRQn);
+	NVIC_EnableIRQ(GPIO_ODD_IRQn);
+}
+
+void GPIO_ODD_IRQHandler(void)
+{
+	__disable_irq();
+	GPIO_IntClear(GPIO_IntGet());
+    running = 1;
+    __enable_irq();
+}
+
+void GPIO_EVEN_IRQHandler(void)
+{
+	__disable_irq();
+	GPIO_IntClear(GPIO_IntGet());
+	running = 0;
+	__enable_irq();
+}
+
 
 void main(void)
 {
 	char *test;
 	char *test1;
-	int accept = 1;
-	int reject = 1;
   // Initialize device
   initMcu();
   // Initialize board
   initBoard();
   // Initialize application
   initApp();
-
+  int accept = 0;
   // Initialize stack
   gecko_init(&config);
 
   spi_init();
+  gpio_init();
   GPIO_PinModeSet(PB0_PORT,PB0_PIN, gpioModeInput, 1);
   GPIO_PinModeSet(PB1_PORT,PB1_PIN, gpioModeInput, 1);
   struct gecko_msg_le_connection_opened_evt_t * activeConnectionId;
@@ -259,13 +291,13 @@ void main(void)
     	  	GRAPHICS_AppendString(test1);
     	  	GRAPHICS_Update();
     	  	/*command to confirm the Recieved passkey*/
-    	  	while((accept = (GPIO_PinInGet(PB0_PORT, PB0_PIN)) == 1) && (reject = (GPIO_PinInGet(PB1_PORT, PB1_PIN)) == 1));
-    	  	if(accept == 0)
-    	  	{
+    	  	//while((accept = (GPIO_PinInGet(PB0_PORT, PB0_PIN)) == 1) && (reject = (GPIO_PinInGet(PB1_PORT, PB1_PIN)) == 1));
+    	  	//if(accept == 0)
+    	  	//{
     	  		gecko_cmd_sm_passkey_confirm(evt->data.evt_sm_confirm_passkey.connection,1);
         	  	GRAPHICS_AppendString("\n confirmed");
         	  	GRAPHICS_Update();
-    	  	}
+    	  	//}
     	  	/*To Print that the passkey is conform*/
                 break;
 

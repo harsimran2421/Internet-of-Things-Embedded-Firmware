@@ -34,6 +34,7 @@
 
 #include "graphics.h"
 #include "em_usart.h"
+//#include "em_adc.h"
 
 #include "sleep.h"
 
@@ -49,6 +50,8 @@
 #else
 #include "bspconfig.h"
 #endif
+
+
 
 /***********************************************************************************************//**
  * @addtogroup Application
@@ -210,6 +213,8 @@ void schedule_event(x_axis, y_axis, z_axis)
 	motor_drive(x_axis, y_axis, z_axis);
 }
 
+
+
 void main(void)
 {
   char printbuf[128];
@@ -223,6 +228,7 @@ void main(void)
   int service_count = 0;
   int count = 0;
   int ser_count = 0;
+  int running = 1;
   // Initialize device
   initMcu();
   // Initialize board
@@ -232,7 +238,9 @@ void main(void)
   GPIO_PinModeSet(PB0_PORT,PB0_PIN, gpioModeInput, 1);
   GPIO_PinModeSet(PB1_PORT,PB1_PIN, gpioModeInput, 1);
   // Initialize stack
+
   gecko_init(&config);
+
   GRAPHICS_Init();
   gpio_init();
   struct gecko_msg_le_connection_opened_evt_t * activeConnectionId;
@@ -450,6 +458,8 @@ void main(void)
           	case gecko_evt_gatt_characteristic_value_id:
           		if(evt->data.evt_gatt_characteristic_value.characteristic == _char_handle1)
           		{
+          		  if(running == 1)
+          		  {
           			memcpy(printbuf, evt->data.evt_gatt_characteristic_value.value.data, evt->data.evt_gatt_characteristic_value.value.len);
           			printbuf[evt->data.evt_gatt_characteristic_value.value.len] = 0;
           			test1 = (char *)malloc(sizeof(char)*1);
@@ -459,37 +469,46 @@ void main(void)
          			//GRAPHICS_AppendString(test1);
           			//GRAPHICS_Update();
           			count++;
-          		if(count==1)
-          		{
-          			x_axis = *(evt->data.evt_gatt_characteristic_value.value.data);
-      				itoa(x_axis,test1,10);
-      				GRAPHICS_Clear();
-      				GRAPHICS_AppendString(test1);
-      				GRAPHICS_Update();
+          				if(count==1)
+          				{
+          					x_axis = *(evt->data.evt_gatt_characteristic_value.value.data);
+          					itoa(x_axis,test1,10);
+							GRAPHICS_Clear();
+							GRAPHICS_AppendString(test1);
+							GRAPHICS_Update();
+						}
+						else if(count==2)
+						{
+							y_axis = *(evt->data.evt_gatt_characteristic_value.value.data);
+							itoa(y_axis,test2,10);
+							GRAPHICS_AppendString(test2);
+							GRAPHICS_Update();
+						}
+						else if(count == 3)
+						{
+							z_axis = *(evt->data.evt_gatt_characteristic_value.value.data);
+							itoa(z_axis,test3,10);
+							GRAPHICS_AppendString(test3);
+							GRAPHICS_Update();
+							schedule_event(x_axis, y_axis, z_axis);
+							count = 0;
+						}
           		}
-          		else if(count==2)
-          		{
-          			y_axis = *(evt->data.evt_gatt_characteristic_value.value.data);
-      				itoa(y_axis,test2,10);
-      				GRAPHICS_AppendString(test2);
-      				GRAPHICS_Update();
-          		}
-          		else if(count == 3)
-          		{
-          			z_axis = *(evt->data.evt_gatt_characteristic_value.value.data);
-      				itoa(z_axis,test3,10);
-      				GRAPHICS_AppendString(test3);
-      				GRAPHICS_Update();
-          			schedule_event(x_axis, y_axis, z_axis);
-          			count = 0;
-          		}
-          		}
-          		else if(evt->data.evt_gatt_characteristic_value.characteristic == _bchar_handle)
-          		{
-          			memcpy(printbuf, evt->data.evt_gatt_characteristic_value.value.data, evt->data.evt_gatt_characteristic_value.value.len);
-          			btest = (char *)malloc(sizeof(char)*1);
-          			itoa(*(evt->data.evt_gatt_characteristic_value.value.data),btest,10);
-          		}
+          	else
+          	{
+          		GRAPHICS_Clear();
+          		GRAPHICS_AppendString("Stop Command\n");
+          		GRAPHICS_Update();
+          		count = 0;
+          	}
+          }
+          else if(evt->data.evt_gatt_characteristic_value.characteristic == _bchar_handle)
+          {
+         	memcpy(printbuf, evt->data.evt_gatt_characteristic_value.value.data, evt->data.evt_gatt_characteristic_value.value.len);
+         	btest = (char *)malloc(sizeof(char)*1);
+         	itoa(*(evt->data.evt_gatt_characteristic_value.value.data),btest,10);
+         	running = *(evt->data.evt_gatt_characteristic_value.value.data);
+          }
           	break;
 
       default:

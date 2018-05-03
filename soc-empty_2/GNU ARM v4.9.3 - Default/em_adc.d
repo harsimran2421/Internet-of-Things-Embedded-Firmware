@@ -1,10 +1,4 @@
-main_working_mitm.o: ../main_working_mitm.c ../init_mcu.h ../init_board.h \
- ../init_app.h ../ble-configuration.h ../board_features.h \
- C:\Users\harsi\Desktop\project\soc-empty_2\protocol\bluetooth_2.7\ble_stack\inc\common/bg_types.h \
- C:\Users\harsi\Desktop\project\soc-empty_2\protocol\bluetooth_2.7\ble_stack\inc\soc/native_gecko.h \
- C:\Users\harsi\Desktop\project\soc-empty_2/hal-config.h \
- C:\Users\harsi\Desktop\project\soc-empty_2/board_features.h \
- c:\siliconlabs\simplicitystudio\v4_2\developer\sdks\gecko_sdk_suite\v2.1\hardware\kit\efr32bg1_brd4302a\config\hal-config-board.h \
+em_adc.o: ../em_adc.c ../em_adc.h \
  C:\Users\harsi\Desktop\project\soc-empty_2\platform\Device\SiliconLabs\EFR32BG1B\Include/em_device.h \
  C:\Users\harsi\Desktop\project\soc-empty_2\platform\Device\SiliconLabs\EFR32BG1B\Include/efr32bg1b232f256gm56.h \
  C:\Users\harsi\Desktop\project\soc-empty_2\platform\CMSIS\Include/core_cm4.h \
@@ -49,50 +43,12 @@ main_working_mitm.o: ../main_working_mitm.c ../init_mcu.h ../init_board.h \
  C:\Users\harsi\Desktop\project\soc-empty_2\platform\Device\SiliconLabs\EFR32BG1B\Include/efr32bg1b_dmareq.h \
  C:\Users\harsi\Desktop\project\soc-empty_2\platform\Device\SiliconLabs\EFR32BG1B\Include/efr32bg1b_af_ports.h \
  C:\Users\harsi\Desktop\project\soc-empty_2\platform\Device\SiliconLabs\EFR32BG1B\Include/efr32bg1b_af_pins.h \
- C:\Users\harsi\Desktop\project\soc-empty_2\platform\halconfig\inc\hal-config/hal-config-types.h \
- C:\Users\harsi\Desktop\project\soc-empty_2\platform\emlib\inc/em_gpio.h \
- C:\Users\harsi\Desktop\project\soc-empty_2\platform\emlib\inc/em_bus.h \
  C:\Users\harsi\Desktop\project\soc-empty_2\platform\emlib\inc/em_assert.h \
- C:\Users\harsi\Desktop\project\soc-empty_2/hal-config-app-common.h \
- C:\Users\harsi\Desktop\project\soc-empty_2\protocol\bluetooth_2.7\ble_stack\inc\common/gecko_configuration.h \
- C:\Users\harsi\Desktop\project\soc-empty_2\protocol\bluetooth_2.7\ble_stack\inc\common/bg_gattdb_def.h \
- C:\Users\harsi\Desktop\project\soc-empty_2\protocol\bluetooth_2.7\ble_stack\inc\common/bg_types.h \
- C:\Users\harsi\Desktop\project\soc-empty_2\protocol\bluetooth_2.7\ble_stack\inc\common/bg_errorcodes.h \
- ../gatt_db.h \
- C:\Users\harsi\Desktop\project\soc-empty_2\protocol\bluetooth_2.7\ble_stack\inc\common/bg_gattdb_def.h \
- C:\Users\harsi\Desktop\project\soc-empty_2\platform\emlib\inc/em_emu.h \
  C:\Users\harsi\Desktop\project\soc-empty_2\platform\emlib\inc/em_cmu.h \
- ../gpio.h ../hal-config.h \
- C:\Users\harsi\Desktop\project\soc-empty_2\platform\emlib\inc/em_usart.h \
- c:\siliconlabs\simplicitystudio\v4_2\developer\sdks\gecko_sdk_suite\v2.1\hardware\kit\common\drivers\mx25flash_spi.h \
- C:\Users\harsi\Desktop\project\soc-empty_2\hardware\kit\common\halconfig/mx25flashhalconfig.h \
- c:\siliconlabs\simplicitystudio\v4_2\developer\sdks\gecko_sdk_suite\v2.1\util\silicon_labs\silabs_core\graphics\graphics.h \
- c:\siliconlabs\simplicitystudio\v4_2\developer\sdks\gecko_sdk_suite\v2.1\platform\middleware\glib\glib\glib.h \
- c:\siliconlabs\simplicitystudio\v4_2\developer\sdks\gecko_sdk_suite\v2.1\platform\middleware\glib\glib\glib_color.h \
- c:\siliconlabs\simplicitystudio\v4_2\developer\sdks\gecko_sdk_suite\v2.1\platform\middleware\glib\dmd\dmd.h \
- c:\siliconlabs\simplicitystudio\v4_2\developer\sdks\gecko_sdk_suite\v2.1\platform\middleware\glib\em_types.h \
- C:\Users\harsi\Desktop\project\soc-empty_2\hardware\kit\common\halconfig/bsphalconfig.h \
- C:\Users\harsi\Desktop\project\soc-empty_2\hardware\kit\common\bsp/bsp_bcp.h
+ C:\Users\harsi\Desktop\project\soc-empty_2\platform\emlib\inc/em_assert.h \
+ C:\Users\harsi\Desktop\project\soc-empty_2\platform\emlib\inc/em_bus.h
 
-../init_mcu.h:
-
-../init_board.h:
-
-../init_app.h:
-
-../ble-configuration.h:
-
-../board_features.h:
-
-C:\Users\harsi\Desktop\project\soc-empty_2\protocol\bluetooth_2.7\ble_stack\inc\common/bg_types.h:
-
-C:\Users\harsi\Desktop\project\soc-empty_2\protocol\bluetooth_2.7\ble_stack\inc\soc/native_gecko.h:
-
-C:\Users\harsi\Desktop\project\soc-empty_2/hal-config.h:
-
-C:\Users\harsi\Desktop\project\soc-empty_2/board_features.h:
-
-c:\siliconlabs\simplicitystudio\v4_2\developer\sdks\gecko_sdk_suite\v2.1\hardware\kit\efr32bg1_brd4302a\config\hal-config-board.h:
+../em_adc.h:
 
 C:\Users\harsi\Desktop\project\soc-empty_2\platform\Device\SiliconLabs\EFR32BG1B\Include/em_device.h:
 
@@ -182,52 +138,10 @@ C:\Users\harsi\Desktop\project\soc-empty_2\platform\Device\SiliconLabs\EFR32BG1B
 
 C:\Users\harsi\Desktop\project\soc-empty_2\platform\Device\SiliconLabs\EFR32BG1B\Include/efr32bg1b_af_pins.h:
 
-C:\Users\harsi\Desktop\project\soc-empty_2\platform\halconfig\inc\hal-config/hal-config-types.h:
-
-C:\Users\harsi\Desktop\project\soc-empty_2\platform\emlib\inc/em_gpio.h:
-
-C:\Users\harsi\Desktop\project\soc-empty_2\platform\emlib\inc/em_bus.h:
-
 C:\Users\harsi\Desktop\project\soc-empty_2\platform\emlib\inc/em_assert.h:
-
-C:\Users\harsi\Desktop\project\soc-empty_2/hal-config-app-common.h:
-
-C:\Users\harsi\Desktop\project\soc-empty_2\protocol\bluetooth_2.7\ble_stack\inc\common/gecko_configuration.h:
-
-C:\Users\harsi\Desktop\project\soc-empty_2\protocol\bluetooth_2.7\ble_stack\inc\common/bg_gattdb_def.h:
-
-C:\Users\harsi\Desktop\project\soc-empty_2\protocol\bluetooth_2.7\ble_stack\inc\common/bg_types.h:
-
-C:\Users\harsi\Desktop\project\soc-empty_2\protocol\bluetooth_2.7\ble_stack\inc\common/bg_errorcodes.h:
-
-../gatt_db.h:
-
-C:\Users\harsi\Desktop\project\soc-empty_2\protocol\bluetooth_2.7\ble_stack\inc\common/bg_gattdb_def.h:
-
-C:\Users\harsi\Desktop\project\soc-empty_2\platform\emlib\inc/em_emu.h:
 
 C:\Users\harsi\Desktop\project\soc-empty_2\platform\emlib\inc/em_cmu.h:
 
-../gpio.h:
+C:\Users\harsi\Desktop\project\soc-empty_2\platform\emlib\inc/em_assert.h:
 
-../hal-config.h:
-
-C:\Users\harsi\Desktop\project\soc-empty_2\platform\emlib\inc/em_usart.h:
-
-c:\siliconlabs\simplicitystudio\v4_2\developer\sdks\gecko_sdk_suite\v2.1\hardware\kit\common\drivers\mx25flash_spi.h:
-
-C:\Users\harsi\Desktop\project\soc-empty_2\hardware\kit\common\halconfig/mx25flashhalconfig.h:
-
-c:\siliconlabs\simplicitystudio\v4_2\developer\sdks\gecko_sdk_suite\v2.1\util\silicon_labs\silabs_core\graphics\graphics.h:
-
-c:\siliconlabs\simplicitystudio\v4_2\developer\sdks\gecko_sdk_suite\v2.1\platform\middleware\glib\glib\glib.h:
-
-c:\siliconlabs\simplicitystudio\v4_2\developer\sdks\gecko_sdk_suite\v2.1\platform\middleware\glib\glib\glib_color.h:
-
-c:\siliconlabs\simplicitystudio\v4_2\developer\sdks\gecko_sdk_suite\v2.1\platform\middleware\glib\dmd\dmd.h:
-
-c:\siliconlabs\simplicitystudio\v4_2\developer\sdks\gecko_sdk_suite\v2.1\platform\middleware\glib\em_types.h:
-
-C:\Users\harsi\Desktop\project\soc-empty_2\hardware\kit\common\halconfig/bsphalconfig.h:
-
-C:\Users\harsi\Desktop\project\soc-empty_2\hardware\kit\common\bsp/bsp_bcp.h:
+C:\Users\harsi\Desktop\project\soc-empty_2\platform\emlib\inc/em_bus.h:

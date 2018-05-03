@@ -23,9 +23,6 @@ int ultrasonic_read()
 void gpio_init()
 {
 	CMU_ClockEnable(cmuClock_HFLE, true);
-	//CMU_OscillatorEnable(, true, true);
-	//CMU_HFXOAutostartEnable(0, true, true);
-	//CMU_OscillatorEnable(cmuOsc_HFXO, true, true);
 	GPIO_PinModeSet(TRIGGER_PORT,TRIGGER_PIN,gpioModePushPull, 1);
 	GPIO_PinModeSet(ECHO_PORT,ECHO_PIN,gpioModeInputPullFilter, 1);
 	GPIO_DriveStrengthSet(TRIGGER_PORT,gpioDriveStrengthStrongAlternateStrong);
